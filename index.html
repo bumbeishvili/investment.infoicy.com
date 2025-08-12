@@ -1,1 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #667eea 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #764ba2 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .chart-container {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .chart-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chart-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .chart-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .chart-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: right;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .calculators-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+        }
+
+        .calculator-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .sliders-section {
+            margin-bottom: 25px;
+        }
+
+        .results-section {
+            /* Results go at the bottom */
+        }
+
+        .calculator-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 32px 60px rgba(0,0,0,0.4);
+        }
+
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .calculator-title {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            outline: none;
+            flex: 1;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .remove-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-name {
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .slider-icon {
+            width: 18px;
+            height: 18px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .slider-value-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slider-value {
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .custom-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            width: 70px;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .slider-container {
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .slider-range {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .results-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .results-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .results-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 6px 0;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-label {
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .result-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .final-value {
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gains-value {
+            color: #10b981;
+        }
+
+        .contributions-value {
+            color: #f59e0b;
+        }
+
+        #investmentChart {
+            max-height: 350px;
+            min-height: 350px;
+            height: 350px;
+        }
+
+        @media (max-width: 1200px) {
+            .calculators-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-pattern"></div>
+    
+    <div class="container">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-left">
+                    <div class="chart-icon">📈</div>
+                    <div class="chart-title">Portfolio Growth Projection</div>
+                </div>
+                <div class="chart-right">
+                    <div class="chart-stats" id="chartStats"></div>
+                    <button class="add-btn" onclick="addCalculator()">+ Compare</button>
+                </div>
+            </div>
+            <canvas id="investmentChart"></canvas>
+        </div>
+
+        <div class="calculators-container" id="calculatorsContainer"></div>
+    </div>
+
+    <script>
+        let calculators = [];
+        let chart;
+        let nextId = 1;
+
+        const colors = [
+            { primary: 'rgba(102, 126, 234, 1)', secondary: 'rgba(102, 126, 234, 0.2)' },
+            { primary: 'rgba(239, 68, 68, 1)', secondary: 'rgba(239, 68, 68, 0.2)' },
+            { primary: 'rgba(16, 185, 129, 1)', secondary: 'rgba(16, 185, 129, 0.2)' },
+            { primary: 'rgba(245, 158, 11, 1)', secondary: 'rgba(245, 158, 11, 0.2)' },
+            { primary: 'rgba(139, 92, 246, 1)', secondary: 'rgba(139, 92, 246, 0.2)' },
+            { primary: 'rgba(236, 72, 153, 1)', secondary: 'rgba(236, 72, 153, 0.2)' }
+        ];
+
+        const icons = {
+            initialDeposit: '💰',
+            monthlyDeposit: '📅',
+            annualReturn: '📈',
+            years: '⏰'
+        };
+
+        // Logarithmic conversion functions
+        function valueToSlider(value, min, max, isLog = false) {
+            if (isLog && value > 0) {
+                const logMin = Math.log10(Math.max(min, 1));
+                const logMax = Math.log10(max);
+                const logValue = Math.log10(value);
+                return ((logValue - logMin) / (logMax - logMin)) * 100;
+            }
+            return ((value - min) / (max - min)) * 100;
+        }
+
+        function sliderToValue(sliderValue, min, max, isLog = false) {
+            const ratio = sliderValue / 100;
+            if (isLog) {
+                const logMin = Math.log10(Math.max(min, 1));
+                const logMax = Math.log10(max);
+                return Math.round(Math.pow(10, logMin + ratio * (logMax - logMin)));
+            }
+            return min + ratio * (max - min);
+        }
+
+        function formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return '$' + (amount / 1000000).toFixed(1) + 'M';
+            } else if (amount >= 1000) {
+                return '$' + (amount / 1000).toFixed(0) + 'K';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function parseInputValue(inputValue, field) {
+            let cleanValue = inputValue.toString().replace(/[$,%]/g, '');
+            
+            if (cleanValue.toLowerCase().includes('k')) {
+                cleanValue = parseFloat(cleanValue.replace(/k/i, '')) * 1000;
+            } else if (cleanValue.toLowerCase().includes('m')) {
+                cleanValue = parseFloat(cleanValue.replace(/m/i, '')) * 1000000;
+            } else {
+                cleanValue = parseFloat(cleanValue);
+            }
+            
+            if (isNaN(cleanValue)) return 0;
+            
+            // Set limits based on field with expanded ranges
+            if (field === 'initialDeposit') return Math.max(0, Math.min(10000000, cleanValue)); // Up to $10M
+            if (field === 'monthlyDeposit') return Math.max(0, Math.min(100000, cleanValue)); // Up to $100K
+            if (field === 'annualReturn') return Math.max(0, Math.min(100, cleanValue)); // Up to 100%
+            if (field === 'years') return Math.max(1, Math.min(50, cleanValue));
+            
+            return cleanValue;
+        }
+
+        function calculateInvestment(initial, monthly, rate, years) {
+            const monthlyRate = rate / 100 / 12;
+            const months = years * 12;
+            const data = [];
+            
+            for (let year = 0; year <= years; year++) {
+                const currentMonths = year * 12;
+                let balance = initial;
+                
+                if (currentMonths > 0) {
+                    balance = initial * Math.pow(1 + monthlyRate, currentMonths);
+                    
+                    if (monthlyRate > 0) {
+                        const monthlyContribution = monthly * ((Math.pow(1 + monthlyRate, currentMonths) - 1) / monthlyRate);
+                        balance += monthlyContribution;
+                    } else {
+                        balance += monthly * currentMonths;
+                    }
+                }
+                
+                const totalContributions = initial + (monthly * currentMonths);
+                const totalGains = balance - totalContributions;
+                
+                data.push({
+                    year,
+                    balance: Math.round(balance),
+                    contributions: totalContributions,
+                    gains: Math.round(totalGains)
+                });
+            }
+            
+            return data;
+        }
+
+        function updateSliderBackground(slider, calc, percentage) {
+            slider.style.background = `linear-gradient(to right, ${calc.color.primary} 0%, ${calc.color.primary} ${percentage}%, rgba(255,255,255,0.1) ${percentage}%, rgba(255,255,255,0.1) 100%)`;
+        }
+
+        function updateChartStats() {
+            const statsContainer = document.getElementById('chartStats');
+            
+            if (calculators.length === 0) return;
+
+            let totalValue = 0;
+            let avgReturn = 0;
+
+            calculators.forEach(calc => {
+                const data = calculateInvestment(calc.initialDeposit, calc.monthlyDeposit, calc.annualReturn, calc.years);
+                const finalValue = data[data.length - 1].balance;
+                totalValue += finalValue;
+                avgReturn += calc.annualReturn;
+            });
+
+            avgReturn = avgReturn / calculators.length;
+
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Total Portfolio</div>
+                    <div class="stat-value">${formatCurrency(totalValue)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Return</div>
+                    <div class="stat-value">${avgReturn.toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        function createCalculator(id, name, initialDeposit = 10000, monthlyDeposit = 500, annualReturn = 7, years = 30) {
+            const calc = {
+                id,
+                name,
+                initialDeposit,
+                monthlyDeposit,
+                annualReturn,
+                years,
+                color: colors[(id - 1) % colors.length]
+            };
+            
+            calculators.push(calc);
+            renderCalculator(calc);
+            updateChart();
+            updateChartStats();
+        }
+
+        function renderCalculator(calc) {
+            const container = document.getElementById('calculatorsContainer');
+            const calcDiv = document.createElement('div');
+            calcDiv.className = 'calculator-card';
+            calcDiv.id = `calc-${calc.id}`;
+            
+            const data = calculateInvestment(calc.initialDeposit, calc.monthlyDeposit, calc.annualReturn, calc.years);
+            const finalData = data[data.length - 1];
+            
+            calcDiv.innerHTML = `
+                <div class="calculator-header">
+                    <input type="text" class="calculator-title" value="${calc.name}" 
+                           onchange="updateCalculatorName(${calc.id}, this.value)">
+                    ${calculators.length > 1 ? `<button class="remove-btn" onclick="removeCalculator(${calc.id})">×</button>` : ''}
+                </div>
+
+                <div class="sliders-section">
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span class="slider-name">
+                                <span class="slider-icon">${icons.initialDeposit}</span>
+                                Initial Deposit
+                            </span>
+                            <div class="slider-value-container">
+                                <span class="slider-value" id="initial-value-${calc.id}">${formatCurrency(calc.initialDeposit)}</span>
+                                <input type="text" class="custom-input" value="${calc.initialDeposit}" 
+                                       onchange="updateFromInput(${calc.id}, 'initialDeposit', this.value)">
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" min="0" max="100" step="1" 
+                                   value="${valueToSlider(calc.initialDeposit, 1, 10000000, true)}" 
+                                   oninput="updateFromSlider(${calc.id}, 'initialDeposit', this.value)">
+                            <div class="slider-range">
+                                <span>$0</span>
+                                <span>$10M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span class="slider-name">
+                                <span class="slider-icon">${icons.monthlyDeposit}</span>
+                                Monthly Contribution
+                            </span>
+                            <div class="slider-value-container">
+                                <span class="slider-value" id="monthly-value-${calc.id}">${formatCurrency(calc.monthlyDeposit)}</span>
+                                <input type="text" class="custom-input" value="${calc.monthlyDeposit}" 
+                                       onchange="updateFromInput(${calc.id}, 'monthlyDeposit', this.value)">
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" min="0" max="100" step="1" 
+                                   value="${valueToSlider(calc.monthlyDeposit, 1, 100000, true)}"
+                                   oninput="updateFromSlider(${calc.id}, 'monthlyDeposit', this.value)">
+                            <div class="slider-range">
+                                <span>$0</span>
+                                <span>$100K</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span class="slider-name">
+                                <span class="slider-icon">${icons.annualReturn}</span>
+                                Annual Return
+                            </span>
+                            <div class="slider-value-container">
+                                <span class="slider-value" id="return-value-${calc.id}">${calc.annualReturn.toFixed(1)}%</span>
+                                <input type="text" class="custom-input" value="${calc.annualReturn}" 
+                                       onchange="updateFromInput(${calc.id}, 'annualReturn', this.value)">
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" min="0" max="100" step="1" 
+                                   value="${valueToSlider(calc.annualReturn, 0, 100, false)}"
+                                   oninput="updateFromSlider(${calc.id}, 'annualReturn', this.value)">
+                            <div class="slider-range">
+                                <span>0%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span class="slider-name">
+                                <span class="slider-icon">${icons.years}</span>
+                                Investment Period
+                            </span>
+                            <div class="slider-value-container">
+                                <span class="slider-value" id="years-value-${calc.id}">${calc.years} years</span>
+                                <input type="text" class="custom-input" value="${calc.years}" 
+                                       onchange="updateFromInput(${calc.id}, 'years', this.value)">
+                            </div>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" min="0" max="100" step="1" 
+                                   value="${valueToSlider(calc.years, 1, 50, false)}"
+                                   oninput="updateFromSlider(${calc.id}, 'years', this.value)">
+                            <div class="slider-range">
+                                <span>1yr</span>
+                                <span>50yrs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <div class="results-card">
+                        <div class="results-header">
+                            <div class="results-icon">💎</div>
+                            <div class="results-title">Investment Summary</div>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">💰 Total Contributions</span>
+                            <span class="result-value contributions-value" id="contributions-${calc.id}">${formatCurrency(finalData.contributions)}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">📈 Investment Gains</span>
+                            <span class="result-value gains-value" id="gains-${calc.id}">${formatCurrency(finalData.gains)}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">🎯 Final Portfolio Value</span>
+                            <span class="result-value final-value" id="final-${calc.id}">${formatCurrency(finalData.balance)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(calcDiv);
+            
+            // Update slider backgrounds
+            const sliders = calcDiv.querySelectorAll('.slider');
+            const fields = ['initialDeposit', 'monthlyDeposit', 'annualReturn', 'years'];
+            sliders.forEach((slider, index) => {
+                const field = fields[index];
+                const isLog = field === 'initialDeposit' || field === 'monthlyDeposit';
+                const min = field === 'initialDeposit' ? 1 : field === 'monthlyDeposit' ? 1 : field === 'annualReturn' ? 0 : 1;
+                const max = field === 'initialDeposit' ? 10000000 : field === 'monthlyDeposit' ? 100000 : field === 'annualReturn' ? 100 : 50;
+                const percentage = valueToSlider(calc[field], min, max, isLog);
+                updateSliderBackground(slider, calc, percentage);
+            });
+        }
+
+        function updateFromSlider(id, field, sliderValue) {
+            const calc = calculators.find(c => c.id === id);
+            if (!calc) return;
+            
+            let newValue;
+            if (field === 'initialDeposit') {
+                newValue = sliderToValue(parseFloat(sliderValue), 1, 10000000, true); // Up to $10M
+            } else if (field === 'monthlyDeposit') {
+                newValue = sliderToValue(parseFloat(sliderValue), 1, 100000, true); // Up to $100K
+            } else if (field === 'annualReturn') {
+                newValue = sliderToValue(parseFloat(sliderValue), 0, 100, false); // Up to 100%
+            } else if (field === 'years') {
+                newValue = Math.round(sliderToValue(parseFloat(sliderValue), 1, 50, false));
+            }
+            
+            calc[field] = newValue;
+            updateDisplayValues(id, field, newValue);
+            updateResults(id);
+            
+            // Don't update chart on every slider movement to prevent jumping
+            clearTimeout(window.chartUpdateTimeout);
+            window.chartUpdateTimeout = setTimeout(() => {
+                updateChart();
+                updateChartStats();
+            }, 100);
+            
+            // Update slider background
+            const calcDiv = document.getElementById(`calc-${id}`);
+            const sliders = calcDiv.querySelectorAll('.slider');
+            const fields = ['initialDeposit', 'monthlyDeposit', 'annualReturn', 'years'];
+            const fieldIndex = fields.indexOf(field);
+            if (sliders[fieldIndex]) {
+                updateSliderBackground(sliders[fieldIndex], calc, parseFloat(sliderValue));
+            }
+        }
+
+        function updateFromInput(id, field, inputValue) {
+            const calc = calculators.find(c => c.id === id);
+            if (!calc) return;
+            
+            const newValue = parseInputValue(inputValue, field);
+            calc[field] = newValue;
+            
+            updateDisplayValues(id, field, newValue);
+            updateResults(id);
+            updateChart();
+            updateChartStats();
+            
+            // Update slider position and background
+            const calcDiv = document.getElementById(`calc-${id}`);
+            const sliders = calcDiv.querySelectorAll('.slider');
+            const fields = ['initialDeposit', 'monthlyDeposit', 'annualReturn', 'years'];
+            const fieldIndex = fields.indexOf(field);
+            
+            if (sliders[fieldIndex]) {
+                let sliderValue;
+                if (field === 'initialDeposit') {
+                    sliderValue = valueToSlider(newValue, 1, 10000000, true); // Up to $10M
+                } else if (field === 'monthlyDeposit') {
+                    sliderValue = valueToSlider(newValue, 1, 100000, true); // Up to $100K
+                } else if (field === 'annualReturn') {
+                    sliderValue = valueToSlider(newValue, 0, 100, false); // Up to 100%
+                } else if (field === 'years') {
+                    sliderValue = valueToSlider(newValue, 1, 50, false);
+                }
+                
+                sliders[fieldIndex].value = sliderValue;
+                updateSliderBackground(sliders[fieldIndex], calc, sliderValue);
+            }
+        }
+
+        function updateDisplayValues(id, field, value) {
+            let displayValue;
+            if (field === 'initialDeposit' || field === 'monthlyDeposit') {
+                displayValue = formatCurrency(value);
+            } else if (field === 'annualReturn') {
+                displayValue = value.toFixed(1) + '%';
+            } else if (field === 'years') {
+                displayValue = Math.round(value) + ' years';
+            }
+            
+            // Update the display value
+            const valueElement = document.getElementById(`${field === 'initialDeposit' ? 'initial' : field === 'monthlyDeposit' ? 'monthly' : field === 'annualReturn' ? 'return' : 'years'}-value-${id}`);
+            if (valueElement) {
+                valueElement.textContent = displayValue;
+            }
+            
+            // Update the input field
+            const inputElement = document.querySelector(`#calc-${id} input[onchange*="${field}"]`);
+            if (inputElement) {
+                inputElement.value = value;
+            }
+        }
+
+        function updateResults(id) {
+            const calc = calculators.find(c => c.id === id);
+            if (!calc) return;
+            
+            const data = calculateInvestment(calc.initialDeposit, calc.monthlyDeposit, calc.annualReturn, calc.years);
+            const finalData = data[data.length - 1];
+            
+            document.getElementById(`contributions-${id}`).textContent = formatCurrency(finalData.contributions);
+            document.getElementById(`gains-${id}`).textContent = formatCurrency(finalData.gains);
+            document.getElementById(`final-${id}`).textContent = formatCurrency(finalData.balance);
+        }
+
+        function updateCalculatorName(id, name) {
+            const calc = calculators.find(c => c.id === id);
+            if (calc) {
+                calc.name = name;
+                updateChart();
+            }
+        }
+
+        function addCalculator() {
+            createCalculator(nextId++, `Investment ${nextId}`, 10000, 500, 7, 30);
+        }
+
+        function removeCalculator(id) {
+            if (calculators.length <= 1) return;
+            
+            calculators = calculators.filter(c => c.id !== id);
+            document.getElementById(`calc-${id}`).remove();
+            updateChart();
+            updateChartStats();
+        }
+
+        function updateChart() {
+            const maxYears = Math.max(...calculators.map(c => c.years));
+            const chartData = [];
+            
+            for (let year = 0; year <= maxYears; year++) {
+                chartData.push({ year });
+            }
+            
+            const datasets = calculators.map(calc => {
+                const data = calculateInvestment(calc.initialDeposit, calc.monthlyDeposit, calc.annualReturn, calc.years);
+                const chartPoints = [];
+                
+                for (let year = 0; year <= maxYears; year++) {
+                    if (year <= calc.years) {
+                        chartPoints.push(data[year].balance);
+                    } else {
+                        chartPoints.push(null);
+                    }
+                }
+                
+                return {
+                    label: calc.name,
+                    data: chartPoints,
+                    borderColor: calc.color.primary,
+                    backgroundColor: calc.color.secondary,
+                    borderWidth: 4,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: calc.color.primary,
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3
+                };
+            });
+            
+            if (chart) {
+                // Update existing chart data instead of destroying
+                chart.data.labels = chartData.map(d => `Year ${d.year}`);
+                chart.data.datasets = datasets;
+                chart.update('none'); // Use 'none' animation mode to prevent jumping
+            } else {
+                // Create new chart only if it doesn't exist
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.map(d => `Year ${d.year}`),
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 200 // Faster animations to reduce jumping
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: 'rgba(255,255,255,0.9)',
+                                    font: {
+                                        family: 'Montserrat',
+                                        size: 14,
+                                        weight: '600'
+                                    },
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderWidth: 1,
+                                cornerRadius: 12,
+                                titleFont: {
+                                    family: 'Montserrat',
+                                    weight: '600'
+                                },
+                                bodyFont: {
+                                    family: 'Montserrat',
+                                    weight: '500'
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Investment Timeline',
+                                    color: 'rgba(255,255,255,0.9)',
+                                    font: {
+                                        family: 'Montserrat',
+                                        size: 14,
+                                        weight: '600'
+                                    }
+                                },
+                                ticks: {
+                                    color: 'rgba(255,255,255,0.7)',
+                                    font: {
+                                        family: 'Montserrat',
+                                        weight: '500'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.08)',
+                                    drawBorder: false
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Portfolio Value',
+                                    color: 'rgba(255,255,255,0.9)',
+                                    font: {
+                                        family: 'Montserrat',
+                                        size: 14,
+                                        weight: '600'
+                                    }
+                                },
+                                ticks: {
+                                    color: 'rgba(255,255,255,0.7)',
+                                    font: {
+                                        family: 'Montserrat',
+                                        weight: '500'
+                                    },
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.08)',
+                                    drawBorder: false
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        elements: {
+                            line: {
+                                borderCapStyle: 'round',
+                                borderJoinStyle: 'round'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize with one calculator
+        document.addEventListener('DOMContentLoaded', function() {
+            createCalculator(nextId++, 'Investment Strategy 1');
+        });
+    </script>
+</body>
+</html>
